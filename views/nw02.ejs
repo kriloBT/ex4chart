@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= title %></title>
+    <script src="/javascripts/d3.min.js" charset="utf-8"></script>
+    <link href="/stylesheets/nv.d3.css" rel="stylesheet" type="text/css">
+    <script src="/javascripts/nv.d3.min.js"></script>
+    <style>
+
+        #scatterChart svg {
+            height: 400px;
+        }
+
+    </style>
+
+
+
+</head>
+<body>
+<!--<span class="glyphicon glyphicon-user"></span>-->
+<h1>產品類別業績：</h1>
+<h3>共<%=result.length%>筆</h3>
+
+<div id="scatterChart">
+    <svg></svg>
+</div>
+
+<hr>
+<table class="table table-striped table-hover " width="80%">
+    <thead>
+    <tr>
+        <th>CategoryName</th>
+        <th>ProductName</th>
+        <th>ProductSales</th>
+    </tr>
+    </thead>
+    <tbody>
+    <%
+    var category=[],i=0;
+    result.forEach( function ( event ){ %>
+
+    <tr>
+        <td ><%= event.CategoryName %></td>
+        <td ><%= event.ProductName %></td>
+        <td ><%= event.ProductSales %></td>
+    </tr>
+    <%
+        category[i]=event.CategoryName;
+    i++;
+    });
+    console.log("category--- :"+category.length);
+    %>
+    </tbody>
+</table>
+<script type="text/javascript">
+    //顯示scatter chart
+    var scatterdata = function (groups, points) {
+        var data = [],
+        shapes = ['circle', 'cross', 'triangle-up', 'triangle-down', 'diamond', 'square'],
+        random = d3.random.normal();
+
+        data.push({ key: 'Beverages', values: [] });
+        data.push({ key: 'Condiments', values: [] });
+        data.push({ key: 'Confections', values: [] });
+        data.push({ key: 'Dairy Products', values: [] });
+        data.push({ key: 'Produce', values: [] });
+ <%
+var i=0;
+    result.forEach( function ( d ){
+%>
+        //懶得撈category 出來比對，目前寫死 ：
+        //Beverages'Condiments'Confections'Dairy Products'Grains/Cereals'Meat/Poultry'Produce
+
+        if('<%= d.CategoryName %>'=='Beverages') {
+            data[0].values.push({
+                    'x': random(), 'y': random(), 'size': '<%= d.ProductSales %>'
+            });
+        }
+        if('<%= d.CategoryName %>'=='Condiments') {
+            data[1].values.push({
+                'x': random(), 'y': random(), 'size': '<%= d.ProductSales %>'
+            });
+        }
+        if('<%= d.CategoryName %>'=='Confections') {
+            data[2].values.push({
+                'x': random(), 'y': random(), 'size': '<%= d.ProductSales %>'
+            });
+        }
+        if('<%= d.CategoryName %>'=='Dairy Products') {
+            <!--console.log("cn:--------"+'<%= d.CategoryName %>');-->
+            data[3].values.push({
+                'x': random(), 'y': random(), 'size': '<%= d.ProductSales %>'
+            });
+        }
+        if('<%= d.CategoryName %>'=='Produce') {
+            data[4].values.push({
+                'x': random(), 'y': random(), 'size': '<%= d.ProductSales %>'
+            });
+        }
+
+        <%
+        i++;
+     });
+%>
+        return data;
+    }
+
+    nv.addGraph(function() {
+        var chart1 = nv.models.scatterChart()
+                .showDistX(true)
+                .showDistY(true)
+                .color(d3.scale.category10().range());
+
+        chart1.xAxis.tickFormat(d3.format('.05f'));
+        chart1.yAxis.tickFormat(d3.format('.5f'));
+
+        d3.select('#scatterChart svg')
+                .datum(scatterdata(4,40))
+                .transition().duration(500)
+                .call(chart1);
+
+        nv.utils.windowResize(chart1.update);
+
+        return chart1;
+    });
+</script>
+</body>
+</html>

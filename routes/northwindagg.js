@@ -79,6 +79,51 @@ exports.nw01 = function(nwdb){
     };
 };
 
+//產品類別業績
+exports.nw02 = function(nwdb){
+    return function(req, res) {
+        //1. Order Subtotals  訂單小計
+        // Create a collection
+        var collection = nwdb.get('northwind');
+        //var collection = nwdb.get('order_details');
+        // Execute aggregate, notice the pipeline is expressed as an Array
+        console.log("產品類別業績 : ");
+        collection.col.aggregate([
+            {$match : {	}}
+            ,{$unwind : "$orderItems"}
+            ,{$project : {
+                "orderItems.category":1,
+                "orderItems.productId":1,
+                "orderItems.productName":1,
+                "orderItems.lineItemTotal" : {
+                    $multiply : ["$orderItems.unitPrice", "$orderItems.quantity"]
+                    //{	$subtract : [(1.0).valueOf(), "$orderItems.discount"]	}]
+                }
+            }}
+            ,{$group : {
+                _id : {
+                    CategoryName : "$orderItems.category",
+                    ProductName : "$orderItems.productName"
+                },
+                ProductSales : {$sum : "$orderItems.lineItemTotal"}
+            }}
+            ,{$sort : {"_id.CategoryName":1,"_id.ProductName":1}}
+            ,{$project :{
+                _id:0,
+                CategoryName : "$_id.CategoryName",
+                ProductName:"$_id.ProductName",
+                ProductSales : 1
+            }}
+            //,{$out:"a7_SalesbyCategory"}
+        ], function(err, result) {
+            if(err){
+                console.log("err : "+err.message);
+            }
+            //console.log("result : "+util.inspect(result));
+            res.render('nw02', {title: '產品類別業績', result: result });
+        });
+    };
+};
 //    return function(req, res) {
 //var mongoose = require('mongoose');
 //var Schema = mongoose.Schema;
